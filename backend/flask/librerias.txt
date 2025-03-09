@@ -1,0 +1,3 @@
+pip install flask flask-mysql-connector python-dotenv
+pip install boto3 
+pip install werkzeug

@@ -1,0 +1,8 @@
+.env
+# Api node
+node_modules
+package-lock.json
+# Api flask
+flask/db/__pycache__
+__pycache__/
+*.pyc
