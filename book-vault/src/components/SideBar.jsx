@@ -27,6 +27,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 let imgProfile = 'https://img.freepik.com/vector-gratis/configuracion-icono-tecnologia-vector-engranaje-neon-purpura-sobre-fondo-degradado_53876-112151.jpg?semt=ais_hybrid_1_1_m_p0_t0';
 
@@ -60,6 +62,7 @@ function handleLogout() {
 function DemoPageContent({ pathname }) {
   
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [filterCategory, setFilterCategory] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [userBooks, setUserBooks] = useState([]);
   // Añadir nuevo estado para los libros en "inicio"
@@ -219,9 +222,13 @@ function DemoPageContent({ pathname }) {
   }, [pathname]);
 
   // Modificar derivación de filteredBooks en la sección "inicio"
-  const filteredBooks = apiBooks.filter((book) =>
-    book.nombre_libro.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBooks = apiBooks.filter((book) => {
+    const matchesSearch = book.nombre_libro.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory ? 
+      (book.categorias && book.categorias.split(',').map(s => s.trim()).includes(filterCategory)) 
+      : true;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Box
@@ -339,7 +346,26 @@ function DemoPageContent({ pathname }) {
                 ),
               }}
             />
-            <Button variant="contained">Filtros</Button>
+            <Select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              displayEmpty
+              sx={{ minWidth: 120 }}
+            >
+              <MenuItem value=""><em>Todas</em></MenuItem>
+              <MenuItem value="Ficcion">Ficcion</MenuItem>
+              <MenuItem value="Terror">Terror</MenuItem>
+              <MenuItem value="Fantasia">Fantasia</MenuItem>
+              <MenuItem value="No Ficción">No Ficción</MenuItem>
+              <MenuItem value="Ciencia">Ciencia</MenuItem>
+              <MenuItem value="Historia">Historia</MenuItem>
+              <MenuItem value="Biografía">Biografía</MenuItem>
+              <MenuItem value="Drama">Drama</MenuItem>
+              <MenuItem value="Aventura">Aventura</MenuItem>
+              <MenuItem value="Anime">Anime</MenuItem>
+              <MenuItem value="Clasico">Clasico</MenuItem>
+              <MenuItem value="Accion">Accion</MenuItem>
+            </Select>
           </Box>
 
           <Grid container spacing={3} justifyContent="center">
@@ -366,56 +392,105 @@ function DemoPageContent({ pathname }) {
               </Grid>
             ))}
           </Grid>
-
-          {/* Modal para mostrar la información completa del libro con diseño mejorado */}
-          {selectedBook && (
-            <Dialog open onClose={handleCloseBook} fullWidth maxWidth="sm">
-              <DialogTitle>{selectedBook.nombre_libro}</DialogTitle>
-              <DialogContent dividers>
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                  <img 
-                    src={selectedBook.url_portada} 
-                    alt={selectedBook.nombre_libro}
-                    style={{ width: '150px', borderRadius: '8px' }}
-                  />
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="body1"><strong>ID:</strong> {selectedBook.id_libro}</Typography>
-                    <Typography variant="body1"><strong>Autor:</strong> {selectedBook.autor}</Typography>
-                    <Typography variant="body1"><strong>Sinopsis:</strong> {selectedBook.sinopsis}</Typography>
-                    <Typography variant="body1">
-                      <strong>URL PDF:</strong> <a href={selectedBook.url_pdf} target="_blank" rel="noopener noreferrer">{selectedBook.url_pdf}</a>
-                    </Typography>
-                    <Typography variant="body1"><strong>Estado:</strong> {selectedBook.Estado_libro}</Typography>
-                    <Typography variant="body1"><strong>Categorías:</strong> {selectedBook.categorias || 'N/A'}</Typography>
-                  </Box>
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleAcquireBook} variant="contained" color="primary">
-                  Adquirir Libro
-                </Button>
-                <Button onClick={handleCloseBook}>Cerrar</Button>
-              </DialogActions>
-            </Dialog>
-          )}
         </>
       )}
 
       {pathname === '/mis-libros' && (
         <>
-          <Typography variant="h6" sx={{ mb: 2 }}>Mis Libros</Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3, width: '80%' }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Buscar libro..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => {}}>
+                      <SearchIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              displayEmpty
+              sx={{ minWidth: 120 }}
+            >
+              <MenuItem value=""><em>Todas</em></MenuItem>
+              <MenuItem value="Ficcion">Ficcion</MenuItem>
+              <MenuItem value="Terror">Terror</MenuItem>
+              <MenuItem value="Fantasia">Fantasia</MenuItem>
+              <MenuItem value="No Ficción">No Ficción</MenuItem>
+              <MenuItem value="Ciencia">Ciencia</MenuItem>
+              <MenuItem value="Historia">Historia</MenuItem>
+              <MenuItem value="Biografía">Biografía</MenuItem>
+              <MenuItem value="Drama">Drama</MenuItem>
+              <MenuItem value="Aventura">Aventura</MenuItem>
+              <MenuItem value="Anime">Anime</MenuItem>
+              <MenuItem value="Clasico">Clasico</MenuItem>
+              <MenuItem value="Accion">Accion</MenuItem>
+            </Select>
+          </Box>
           <Grid container spacing={3} justifyContent="center">
-            {userBooks.map((book) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={book.id_libro}>
-                <BookCard 
-                  image={book.url_portada} 
-                  title={book.nombre_libro} 
-                  author={book.autor} 
-                />
-              </Grid>
-            ))}
+            {userBooks
+              .filter((book) => {
+                const matchesSearch = book.nombre_libro.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesCategory = filterCategory ? 
+                  (book.categorias && book.categorias.split(',').map(s => s.trim()).includes(filterCategory))
+                  : true;
+                return book.Estado_libro === 'Adquirido' && matchesSearch && matchesCategory;
+              })
+              .map((book) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={book.id_libro}>
+                  <Box onClick={() => handleOpenBook(book)} sx={{ cursor: 'pointer' }}>
+                    <BookCard
+                      image={book.url_portada}
+                      title={book.nombre_libro}
+                      author={book.autor}
+                    />
+                  </Box>
+                </Grid>
+              ))}
           </Grid>
         </>
+      )}
+
+      {/* Unified modal for both "/inicio" and "/mis-libros" paths */}
+      {selectedBook && (
+        <Dialog open onClose={handleCloseBook} fullWidth maxWidth="sm">
+          <DialogTitle>{selectedBook.nombre_libro}</DialogTitle>
+          <DialogContent dividers>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+              <img 
+                src={selectedBook.url_portada} 
+                alt={selectedBook.nombre_libro}
+                style={{ width: '150px', borderRadius: '8px' }}
+              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="body1"><strong>ID:</strong> {selectedBook.id_libro}</Typography>
+                <Typography variant="body1"><strong>Autor:</strong> {selectedBook.autor}</Typography>
+                <Typography variant="body1"><strong>Sinopsis:</strong> {selectedBook.sinopsis}</Typography>
+                <Typography variant="body1">
+                  <strong>URL PDF:</strong> <a href={selectedBook.url_pdf} target="_blank" rel="noopener noreferrer">{selectedBook.url_pdf}</a>
+                </Typography>
+                <Typography variant="body1"><strong>Estado:</strong> {selectedBook.Estado_libro}</Typography>
+                <Typography variant="body1"><strong>Categorías:</strong> {selectedBook.categorias || 'N/A'}</Typography>
+              </Box>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            {pathname !== '/mis-libros' && (
+              <Button onClick={handleAcquireBook} variant="contained" color="primary">
+                Adquirir Libro
+              </Button>
+            )}
+            <Button onClick={handleCloseBook}>Cerrar</Button>
+          </DialogActions>
+        </Dialog>
       )}
     </Box>
   );
